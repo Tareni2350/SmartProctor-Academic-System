@@ -1256,6 +1256,34 @@ app.put('/api/exams/:id', (req, res) => {
   res.json({ success: true, exam: examsList[index] });
 });
 
+// Automated Notification: Notify Enrolled Students that Exam is Scheduled & Ready to Attempt
+app.post('/api/exams/:id/notify-students', (req, res) => {
+  const exam = examsList.find(e => e.id === req.params.id);
+  if (!exam) return res.status(404).json({ error: 'Exam not found' });
+
+  const targetStudents = usersList.filter(u => u.role === 'student' && u.status === 'active');
+  targetStudents.forEach(stu => {
+    sendAutomatedMail({
+      recipientEmail: stu.email,
+      recipientName: stu.name,
+      subject: `[Exam Scheduled] ${exam.courseCode}: ${exam.title} is Ready to Attempt`,
+      type: 'exam_scheduled',
+      contentSnippet: `Dear ${stu.name},\n\nYour examination "${exam.title}" (${exam.courseCode}) has been officially scheduled and is ready to be attempted.\n\nExam Details:\n• Duration: ${exam.durationMinutes} Minutes\n• Questions: ${exam.questions.length} questions (${exam.totalMarks} Marks)\n• Passing Score: ${exam.passingMarks} Marks\n• Academic Integrity: Strict 3-Strike Rule Active (Switching tabs or leaving examination window will register a strike; 3 strikes results in automated session termination and disqualification).\n\nPlease log in to SmartProctor to take your exam within the scheduled window.`,
+      metadata: {
+        examTitle: exam.title,
+        maxMarks: exam.totalMarks,
+        reportId: `SCHED-${exam.id.toUpperCase()}`
+      }
+    });
+  });
+
+  res.json({
+    success: true,
+    notifiedCount: targetStudents.length,
+    message: `Automated exam notification successfully sent to ${targetStudents.length} active students.`
+  });
+});
+
 // Delete Exam
 app.delete('/api/exams/:id', (req, res) => {
   examsList = examsList.filter(e => e.id !== req.params.id);

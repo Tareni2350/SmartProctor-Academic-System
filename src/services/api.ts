@@ -54,6 +54,16 @@ export const api = {
     if (!res.ok) throw new Error('Failed to delete exam');
   },
 
+  async notifyExamScheduled(id: string): Promise<{ success: boolean; notifiedCount: number; message: string }> {
+    const res = await fetch(`/api/exams/${id}/notify-students`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to dispatch exam notifications');
+    return data;
+  },
+
   // Submissions
   async submitExam(
     examId: string,

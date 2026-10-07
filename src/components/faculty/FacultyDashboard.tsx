@@ -20,7 +20,9 @@ import {
   HelpCircle,
   TrendingUp,
   AlertTriangle,
-  UploadCloud
+  UploadCloud,
+  Mail,
+  BellRing
 } from 'lucide-react';
 import { AIQuestionStudioModal } from './AIQuestionStudioModal';
 import { AIExamCreatorModal } from './AIExamCreatorModal';
@@ -53,6 +55,25 @@ export const FacultyDashboard: React.FC = () => {
   const [selectedExamForAnalysis, setSelectedExamForAnalysis] = useState<string>('');
   const [classAnalysisData, setClassAnalysisData] = useState<{ stats: any; insights: ClassAnalysis } | null>(null);
   const [isLoadingClassAnalysis, setIsLoadingClassAnalysis] = useState(false);
+
+  // Automated Exam Notification State
+  const [notifyingExamId, setNotifyingExamId] = useState<string | null>(null);
+  const [notificationBanner, setNotificationBanner] = useState<string | null>(null);
+
+  const handleNotifyStudents = async (examId: string, examTitle: string) => {
+    setNotifyingExamId(examId);
+    try {
+      const res = await api.notifyExamScheduled(examId);
+      setNotificationBanner(`📧 Automated Mail Dispatched: ${res.message || 'Notification sent to active enrolled candidates.'}`);
+      setTimeout(() => setNotificationBanner(null), 7000);
+    } catch (err: any) {
+      console.error('Failed to notify students:', err);
+      setNotificationBanner(`Failed to dispatch email notifications: ${err.message}`);
+      setTimeout(() => setNotificationBanner(null), 5000);
+    } finally {
+      setNotifyingExamId(null);
+    }
+  };
 
   useEffect(() => {
     loadFacultyData();
@@ -263,10 +284,22 @@ export const FacultyDashboard: React.FC = () => {
       {/* TAB 1: EXAMINATIONS */}
       {activeTab === 'exams' && (
         <div className="space-y-6">
+          {notificationBanner && (
+            <div className="p-4 rounded-xl bg-fuchsia-50 border border-fuchsia-200 text-fuchsia-900 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-fuchsia-600 shrink-0" />
+              <span>{notificationBanner}</span>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-900">
-              Department Examinations Schedule
-            </h2>
+            <div>
+              <h2 className="text-base font-bold text-slate-900">
+                Department Examinations Schedule
+              </h2>
+              <p className="text-xs text-slate-500">
+                Scheduled exams automatically notify active enrolled students with syllabus, duration, passing score, and 3-strike rules.
+              </p>
+            </div>
             <button
               onClick={() => setIsManualExamModalOpen(true)}
               className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-sm"
@@ -306,16 +339,25 @@ export const FacultyDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100">
-                  <span>Enrolled: {exam.enrolledStudentsCount || 40} students</span>
+                <div className="pt-2.5 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 gap-2">
+                  <button
+                    onClick={() => handleNotifyStudents(exam.id, exam.title)}
+                    disabled={notifyingExamId === exam.id}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-fuchsia-200 bg-fuchsia-50 hover:bg-fuchsia-100 text-[11px] font-semibold text-fuchsia-700 transition-all disabled:opacity-50"
+                    title="Dispatch automated notification email to enrolled students"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-fuchsia-600" />
+                    <span>{notifyingExamId === exam.id ? 'Sending Mails...' : 'Notify Students'}</span>
+                  </button>
+
                   <button
                     onClick={() => {
                       setSelectedExamForAnalysis(exam.id);
                       setActiveTab('ai_insights');
                     }}
-                    className="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1"
+                    className="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 text-[11px]"
                   >
-                    <span>Analyze Cohort</span>
+                    <span>Cohort Stats</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

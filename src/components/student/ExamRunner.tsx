@@ -178,6 +178,25 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
     }
   };
 
+  useEffect(() => {
+    handleImmediateTerminationRef.current = handleImmediateTermination;
+  });
+
+  // Mark current question for review and advance to next question
+  const handleMarkAndNext = () => {
+    recordQuestionTime();
+    setAnswers(prev => ({
+      ...prev,
+      [currentQuestion.id]: {
+        ...prev[currentQuestion.id],
+        markedForReview: !prev[currentQuestion.id]?.markedForReview
+      }
+    }));
+    if (currentIndex < exam.questions.length - 1) {
+      handleSelectQuestion(currentIndex + 1);
+    }
+  };
+
   // Timer countdown
   useEffect(() => {
     if (secondsRemaining <= 0) {
@@ -392,6 +411,14 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
                   />
                 ))}
               </div>
+              <button
+                type="button"
+                onClick={() => recordViolationStrike('Simulated window blur or tab defocus')}
+                className="ml-1 text-[10px] text-slate-400 hover:text-white underline font-mono cursor-pointer"
+                title="Test 3-Strike Violation Termination Rule"
+              >
+                Test Strike
+              </button>
             </div>
 
             {/* AI Assistant Help */}
@@ -525,23 +552,36 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
           </div>
 
           {/* Question Footer Navigation Controls */}
-          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between flex-wrap gap-2">
             <button
               onClick={handleClearResponse}
               disabled={!isCurrentAnswered}
-              className="text-xs font-headline font-bold text-slate-400 hover:text-rose-600 disabled:opacity-30 transition-colors"
+              className="text-xs font-headline font-bold text-slate-400 hover:text-rose-600 disabled:opacity-30 transition-colors cursor-pointer"
             >
               Clear Choice
             </button>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <button
                 onClick={() => handleSelectQuestion(Math.max(0, currentIndex - 1))}
                 disabled={currentIndex === 0}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 text-xs font-headline font-bold text-slate-700 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-30 text-xs font-headline font-bold text-slate-700 transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 <span>Previous</span>
+              </button>
+
+              <button
+                onClick={handleMarkAndNext}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-xs font-headline font-bold transition-all cursor-pointer ${
+                  currentAnswer.markedForReview
+                    ? 'border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100'
+                    : 'border-purple-200 bg-white text-purple-700 hover:bg-purple-50'
+                }`}
+                title="Mark this question for later review and advance to next question"
+              >
+                <Bookmark className="w-3.5 h-3.5 text-purple-600" />
+                <span>{currentAnswer.markedForReview ? 'Unmark & Next' : 'Mark for Review & Next'}</span>
               </button>
 
               {currentIndex < exam.questions.length - 1 ? (
@@ -569,23 +609,37 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
         <aside className="lg:col-span-4 space-y-5">
           {/* Question Matrix Card */}
           <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs card-shopvibe">
-            <h3 className="text-xs font-headline font-black text-slate-900 tracking-wider uppercase mb-3">
-              Question Palette ({exam.questions.length})
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-headline font-black text-slate-900 tracking-wider uppercase">
+                Question Palette ({exam.questions.length})
+              </h3>
+              <span className="text-[10px] text-slate-400 font-mono">Live Status</span>
+            </div>
 
-            {/* Status Legend */}
+            {/* Status Legend with all 5 distinct states requested */}
             <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pb-3 mb-4 border-b border-slate-100 font-body">
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-fuchsia-500 inline-block" />
-                <span>Answered ({answeredCount})</span>
+                <span className="w-3 h-3 rounded-full bg-emerald-600 inline-block shadow-xs" />
+                <span>Attempted ({attemptedCount})</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-slate-200 border border-slate-300 inline-block" />
-                <span>Unvisited ({unansweredCount})</span>
+                <span className="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-xs" />
+                <span>Not Attempted ({notAttemptedCount})</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-yellow-400 inline-block" />
-                <span>Marked ({markedCount})</span>
+                <div className="relative inline-flex items-center justify-center">
+                  <span className="w-3 h-3 rounded-full bg-purple-700 inline-block shadow-xs" />
+                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                </div>
+                <span>Marked (Answered) ({markedWithAnswerCount})</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-purple-600 inline-block shadow-xs" />
+                <span>Marked (Unanswered) ({markedWithoutAnswerCount})</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-slate-100 border border-slate-300 inline-block" />
+                <span>Not Visited ({notVisitedCount})</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full ring-2 ring-fuchsia-500 bg-white inline-block" />
@@ -600,25 +654,49 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
                 const hasAnswer =
                   ans?.selectedOptionIndex !== undefined ||
                   (ans?.descriptiveAnswer && ans.descriptiveAnswer.trim().length > 0);
-                const isMarked = ans?.markedForReview;
+                const isMarked = !!ans?.markedForReview;
+                const isVisited = !!visitedMap[q.id];
                 const isCurrent = idx === currentIndex;
 
-                let btnBg = 'bg-slate-100 text-slate-700 border-slate-200';
-                if (isMarked) {
-                  btnBg = 'bg-yellow-400 text-amber-950 border-yellow-500 font-black';
+                let btnBg = 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200';
+                let indicatorDot = null;
+                let stateLabel = 'Not Visited';
+
+                if (isMarked && hasAnswer) {
+                  // Marked for Review WITH Answer
+                  btnBg = 'bg-purple-700 text-white border-purple-800 font-bold';
+                  stateLabel = 'Marked for Review (With Answer)';
+                  indicatorDot = (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-1 ring-white" title="Answered & Marked for Review" />
+                  );
+                } else if (isMarked && !hasAnswer) {
+                  // Marked for Review WITHOUT Answer
+                  btnBg = 'bg-purple-600 text-white border-purple-700 font-bold';
+                  stateLabel = 'Marked for Review (Without Answer)';
+                  indicatorDot = (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-300 ring-1 ring-white" title="Marked for Review (Unanswered)" />
+                  );
                 } else if (hasAnswer) {
-                  btnBg = 'bg-fuchsia-500 text-white border-fuchsia-600 font-bold';
+                  // Attempted
+                  btnBg = 'bg-emerald-600 text-white border-emerald-700 font-bold';
+                  stateLabel = 'Attempted';
+                } else if (isVisited) {
+                  // Not Attempted (visited, left blank)
+                  btnBg = 'bg-amber-500 text-white border-amber-600 font-bold';
+                  stateLabel = 'Not Attempted';
                 }
 
                 return (
                   <button
                     key={q.id}
                     onClick={() => handleSelectQuestion(idx)}
+                    title={`Question ${idx + 1}: ${stateLabel}`}
                     className={`h-9 rounded-xl text-xs font-code border transition-all flex items-center justify-center relative cursor-pointer ${btnBg} ${
-                      isCurrent ? 'ring-2 ring-offset-2 ring-fuchsia-500 scale-105' : ''
+                      isCurrent ? 'ring-2 ring-offset-2 ring-fuchsia-500 scale-105 font-black z-10' : ''
                     }`}
                   >
                     {idx + 1}
+                    {indicatorDot}
                   </button>
                 );
               })}
@@ -676,23 +754,31 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
             </p>
 
             <div className="bg-slate-50 rounded-xl p-3.5 space-y-2 text-xs text-slate-700 mb-6 border border-slate-200/70">
-              <div className="flex justify-between">
+              <div className="flex justify-between font-medium">
                 <span>Total Questions:</span>
                 <span className="font-bold">{exam.questions.length}</span>
               </div>
               <div className="flex justify-between text-emerald-700">
-                <span>Answered:</span>
-                <span className="font-bold">{answeredCount}</span>
+                <span>Attempted (Answered):</span>
+                <span className="font-bold">{attemptedCount}</span>
               </div>
               <div className="flex justify-between text-amber-700">
-                <span>Marked for Review:</span>
-                <span className="font-bold">{markedCount}</span>
+                <span>Not Attempted (Blank):</span>
+                <span className="font-bold">{notAttemptedCount}</span>
               </div>
-              <div className="flex justify-between text-rose-700">
-                <span>Unanswered:</span>
-                <span className="font-bold">{unansweredCount}</span>
+              <div className="flex justify-between text-purple-700">
+                <span>Marked for Review (With Answer):</span>
+                <span className="font-bold">{markedWithAnswerCount}</span>
               </div>
-              <div className="flex justify-between text-slate-500 pt-1 border-t border-slate-200">
+              <div className="flex justify-between text-purple-600">
+                <span>Marked for Review (Without Answer):</span>
+                <span className="font-bold">{markedWithoutAnswerCount}</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>Not Visited:</span>
+                <span className="font-bold">{notVisitedCount}</span>
+              </div>
+              <div className="flex justify-between text-slate-500 pt-1.5 border-t border-slate-200">
                 <span>Time Remaining:</span>
                 <span className="font-mono font-bold">{formatTime(secondsRemaining)}</span>
               </div>
@@ -708,11 +794,79 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
               <button
                 onClick={() => handleFinalSubmit('user_action')}
                 disabled={isSubmitting}
-                className="px-5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+                className="px-5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm cursor-pointer"
               >
                 {isSubmitting ? 'Evaluating...' : 'Yes, Submit Test'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Strike Warning & 3-Strike Auto-Termination Modal */}
+      {showStrikeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className={`bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border-2 ${
+            strikeCount >= 3 ? 'border-rose-500' : 'border-amber-500'
+          }`}>
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-sm ${
+                strikeCount >= 3 ? 'bg-rose-600' : 'bg-amber-500'
+              }`}>
+                <ShieldAlert className="w-7 h-7" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase text-white ${
+                    strikeCount >= 3 ? 'bg-rose-600' : 'bg-amber-600'
+                  }`}>
+                    {strikeCount >= 3 ? 'SESSION TERMINATED' : `STRIKE ${strikeCount} OF 3`}
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono">3-STRIKE INTEGRITY RULE</span>
+                </div>
+                <h2 className="text-lg font-headline font-black text-slate-900 mt-0.5">
+                  {strikeCount >= 3 ? '3-Strike Rule Triggered: Exam Terminated' : 'Academic Integrity Warning'}
+                </h2>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 mb-6">
+              <p className="text-xs text-slate-700 font-medium leading-relaxed font-body">
+                {currentStrikeNotice || latestWarning || (
+                  strikeCount >= 3
+                    ? 'Candidate reached 3 strikes for window defocus / tab switching. Under institutional proctoring regulations, your examination has been automatically terminated and submitted with 0 marks.'
+                    : 'Switching browser tabs, minimizing the exam window, or clicking outside the test viewport is prohibited. Please stay focused on the test interface.'
+                )}
+              </p>
+
+              <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-600 font-mono">
+                <span>Integrity Strikes Recorded:</span>
+                <strong className={`font-bold ${strikeCount >= 3 ? 'text-rose-600' : 'text-amber-600'}`}>
+                  {strikeCount} / 3 Strikes
+                </strong>
+              </div>
+            </div>
+
+            {strikeCount >= 3 ? (
+              <div className="space-y-3 text-center">
+                <div className="flex items-center justify-center gap-2 text-rose-600 text-xs font-bold font-mono">
+                  <div className="w-3.5 h-3.5 rounded-full border-2 border-rose-600 border-t-transparent animate-spin" />
+                  <span>Auto-disqualifying session & logging incident audit report...</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] text-slate-500 font-body">
+                  Reaching 3 strikes triggers immediate automatic termination.
+                </span>
+                <button
+                  onClick={() => setShowStrikeModal(false)}
+                  className="btn-shopvibe-primary px-6 py-2.5 text-xs font-headline font-bold shadow-md cursor-pointer hover:scale-105 active:scale-95"
+                >
+                  I Understand & Return to Exam
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

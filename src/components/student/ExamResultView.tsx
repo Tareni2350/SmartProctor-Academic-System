@@ -19,7 +19,8 @@ import {
   ChevronRight,
   Mail,
   Send,
-  ShieldCheck
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 
 interface ExamResultViewProps {
@@ -132,6 +133,33 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({ attempt, exam, o
         <div className="p-4 rounded-2xl bg-fuchsia-50 border border-fuchsia-200 text-fuchsia-900 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in shadow-xs">
           <CheckCircle2 className="w-4 h-4 text-fuchsia-600 shrink-0" />
           <span>{mailSentSuccess}</span>
+        </div>
+      )}
+
+      {/* 3-Strike Violation Termination Banner */}
+      {attempt.isTerminatedForViolation && (
+        <div className="p-5 rounded-3xl bg-rose-50 border-2 border-rose-400 text-rose-950 shadow-sm animate-in fade-in">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-headline font-black text-rose-900 tracking-wide uppercase">
+                  Exam Terminated: 3-Strike Academic Integrity Rule
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-200 text-rose-900 border border-rose-300">
+                  {attempt.strikeCount || 3} Strikes Recorded
+                </span>
+              </div>
+              <p className="text-xs text-rose-800 leading-relaxed font-body">
+                {attempt.terminationReason || 'This candidate examination was automatically terminated and disqualified after exceeding the permitted limit of 3 window focus/tab switch strikes.'}
+              </p>
+              <div className="text-[11px] text-rose-700/90 font-mono mt-1">
+                Automated Incident Audit Token logged · Candidate disqualified (0 Marks) · Integrity Report sent to Academic Council.
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
