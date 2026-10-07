@@ -1,6 +1,6 @@
 # SmartProctor · AI Examination & Proctoring Platform
 
-SmartProctor is a secure, modern online examination and AI proctoring platform built for educational institutions. It features automated transactional notifications, real-time proctoring with a 3-strike violation termination rule, rich question palettes, and an intuitive ShopVibe interface.
+A fast, reliable online examination and AI proctoring platform featuring automated transactional email notifications, live proctoring with a 3-strike termination rule, and specialized AI agents.
 
 ---
 
@@ -8,79 +8,106 @@ SmartProctor is a secure, modern online examination and AI proctoring platform b
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS, Lucide Icons, Vite
 - **Backend**: Node.js, Express, RESTful APIs
-- **Database**: In-Memory Document & Key-Value Database Engine
-- **AI & Proctoring**: Google Gemini 3.8 Flash (`@google/genai`) with heuristic proctoring algorithms
-- **Email Service**: Automated Transactional Mail Dispatcher & Real-Time Audit Log
+- **Database**: High-Speed In-Memory Document & Key-Value Store (sub-2ms latency for live test sessions & zero-lag telemetry)
+- **AI Engine**: Google Gemini 3.8 Flash (`@google/genai`)
+- **Email Dispatcher**: Automated Transactional Mailer with live audit logging
 
 ---
 
 ## 🗄️ Which Database Are We Using?
 
-SmartProctor uses a **High-Performance In-Memory Document & Key-Value Database Engine** with structured schemas and RESTful persistence endpoints.
+SmartProctor uses an **In-Memory Document & Key-Value Database Engine** running directly in the Node.js service layer.
 
-### Why this database?
-- **Sub-2ms Latency**: Delivers instant query and write speeds needed for live testing, rapid timer synchronizations, and concurrent question switching.
-- **Zero-Lag Proctoring**: Real-time telemetry events (window blurs, tab switches, rapid responses) are logged immediately without external database bottlenecks.
-- **Organized Collections**:
-  1. `users_accounts` — Candidate, faculty, and administrator profiles with status controls (`active`, `pending`).
-  2. `examinations` — Courses, syllabi, question papers, duration, and passing marks.
-  3. `exam_attempts_submissions` — Submitted student responses, scores, question times, and proctoring telemetry.
-  4. `question_bank` — Verified MCQ and descriptive question repository.
-  5. `automated_mail_logs` — Transactional email history with delivery status and incident report IDs.
-
----
-
-## 🌟 Key Features
-
-### 1. 📧 Automated Email Notifications
-- **Exam Scheduled & Ready to Attempt**: Whenever an exam is published or scheduled, enrolled students automatically receive an email with exam duration, total questions, passing score, and proctoring policies.
-- **Faculty 1-Click Dispatch**: Faculty can re-send automated notifications to candidates directly from their dashboard with the "Notify Students" button.
-- **Automated Result Reports**: Students immediately receive an official result scorecard with topic diagnostic scores upon finishing the test.
-- **Violation Alerts**: Automated urgent incident notifications are triggered when an exam is terminated under integrity violations.
-
-### 2. 🚨 3-Strike Violation Termination Rule
-- **Continuous Focus Monitoring**: Detects when candidates switch browser tabs, minimize windows, or lose viewport focus.
-- **Strikes 1 & 2**: Immediate warning notifications and an on-screen dialog showing recorded strikes and cautioning the student.
-- **Strike 3 (Automatic Termination)**: Reaching 3 strikes immediately locks the examination, terminates the session, awards 0 marks, and sends a violation report to the academic integrity committee.
-
-### 3. 🎯 Exam Question Status Indicators
-The interactive question palette and confirmation dialog provide real-time visual tracking across 5 distinct states:
-- 🟢 **Attempted**: Question has been answered and saved.
-- 🟠 **Not Attempted**: Question was visited/viewed by the candidate but left blank.
-- 🟣 **Marked for Review (Without Answer)**: Flagged for later review without any answer selected.
-- 🟣🟢 **Marked for Review (With Answer)**: Question answered and flagged for later review (purple badge with green indicator dot).
-- ⚪ **Not Visited**: Question has not yet been opened.
-- 🔲 **Current Question**: Highlighted with an active focus ring.
-
-Students can also use **"Mark for Review & Next"** to quickly flag questions and advance.
+### Why this Database?
+- **Ultra-Fast Speed (< 2ms)**: Guarantees zero lag during high-frequency exam actions (timer updates, rapid question navigation, autosaves).
+- **Real-Time Proctoring Telemetry**: Tab blur, window switch, and clipboard events are recorded instantly without external network latency.
+- **Structured Collections**:
+  - `users_accounts`: Candidate, faculty, and administrator profiles.
+  - `examinations`: Scheduled exams, syllabi, questions, and durations.
+  - `exam_attempts_submissions`: Student answers, scores, timestamps, and violation logs.
+  - `question_bank`: Curated MCQ and descriptive questions.
+  - `automated_mail_logs`: Real-time transactional emails and delivery audit trail.
 
 ---
 
-## 👤 Demo User Accounts
+## 🤖 AI Agents Used in the Project
 
-You can sign in directly with the following pre-configured credentials (password: `password123` for all):
+SmartProctor integrates **7 specialized AI Agents** built with Gemini 3.8 Flash to automate academic workflows:
 
-| Role | Email | Capabilities |
+1. **Question Generation Agent**: Generates academic-rigor MCQs and descriptive questions based on subject, topic, and difficulty with distractors and explanations.
+2. **Question Quality & Audit Agent**: Inspects questions for ambiguous wording, duplicate options, correct answer keys, and difficulty calibration.
+3. **Exam Creator Agent**: Converts plain natural language requests from faculty into complete exam blueprints (e.g. *"Create a 50-mark DBMS exam with 6 MCQs on normalization"*).
+4. **Student Performance & Study Agent**: Analyzes past tests and weak topics to generate a multi-day recovery study plan and targeted practice questions.
+5. **Real-Time Proctoring & Anomaly Agent**: Evaluates proctoring telemetry (window blurs, answer cadence), generates an objective risk score (Low / Moderate / High), and provides evidentiary audit notes.
+6. **Pre-Exam Syllabus & Rules Assistant**: Answers student questions about syllabus, time limits, and test policies before the exam (strictly locked during live exams for integrity).
+7. **Faculty Cohort Result Insights Agent**: Analyzes class submissions to identify common misconceptions, difficult topics, and students needing remedial assistance.
+
+---
+
+## 📧 Automated Email Notifications
+
+- **Exam Scheduled & Ready to Attempt**: Whenever an exam is published or scheduled, enrolled students automatically receive an email with exam duration, total questions, passing score, and instructions.
+- **Faculty 1-Click Dispatch**: Faculty can trigger or resend automated exam notifications directly from their dashboard using the **"Notify Students (Automated Mail)"** button.
+- **Instant Result Scorecard**: Students automatically receive an email with their marks, percentage, and diagnostic breakdown upon submission.
+- **Academic Violation Incident Email**: An urgent email alert is automatically dispatched if a student's session is terminated due to proctoring violations.
+
+---
+
+## 🚨 3-Strike Violation Termination Rule
+
+To ensure strict academic integrity without human proctor bottlenecks:
+- **Detection**: Continuous browser focus and window visibility tracking.
+- **Strike 1 & 2**: Immediate warning notifications with an on-screen dialog explaining the violation.
+- **Strike 3 (Automatic Termination)**: On the third violation:
+  - The exam session is immediately locked and submitted.
+  - The attempt is flagged with 0 marks.
+  - An automated violation report is sent to the academic integrity committee.
+
+---
+
+## 🎯 Exam Question Status Indicators
+
+The exam palette displays live status indicators so students always know their progress:
+
+| Indicator | Status | Description |
+| :---: | :--- | :--- |
+| 🟢 | **Attempted** | Question has been answered and saved |
+| 🟠 | **Not Attempted** | Question was visited/opened but left blank |
+| 🟣 | **Marked for Review (Without Answer)** | Question flagged for later review without an answer |
+| 🟣🟢 | **Marked for Review (With Answer)** | Question answered and flagged for later review (purple badge with green dot) |
+| ⚪ | **Not Visited** | Question has not yet been opened |
+| 🔲 | **Current Question** | Currently active question with focus outline |
+
+*Quick Action: Students can use the **"Mark for Review & Next"** button to flag and advance in one click.*
+
+---
+
+## 👤 Demo Login Credentials
+
+All accounts share the password: `password123`
+
+| Role | Email | Highlights |
 | :--- | :--- | :--- |
-| **Student** | `alex.rivera@university.edu` | Take scheduled exams, view live indicators, study agent |
-| **Faculty** | `alan.turing@university.edu` | Create exams, notify students, AI question generator, cohort stats |
-| **Admin** | `m.hamilton@university.edu` | Approve accounts, view database specs, audit automated mail logs |
+| **Student** | `alex.rivera@university.edu` | Take scheduled exams, test 3-strike rule, view question palette |
+| **Faculty** | `alan.turing@university.edu` | Create exams, AI question generator, notify students via automated mail |
+| **Admin** | `m.hamilton@university.edu` | Approve accounts, view live database collections & email logs |
 
 ---
 
-## 🚀 Running the Project
+## 🚀 Installation & Deployment
 
+### Vercel / Production Deployment Note
+If deploying to Vercel or environments with strict npm peer-dependency resolution, an `.npmrc` file with `legacy-peer-deps=true` has been included, and `esbuild` is aligned with Vite 8 to prevent `ERESOLVE` errors.
+
+### Local Run:
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Start development server (Port 3000)
+# 2. Run dev server (Port 3000)
 npm run dev
 
 # 3. Build for production
 npm run build
 ```
 
----
-
-*SmartProctor © 2026 Academic Integrity & Online Examination Systems.*
