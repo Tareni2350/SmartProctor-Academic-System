@@ -161,7 +161,17 @@ export interface AutomatedMailLog {
   recipientEmail: string;
   recipientName: string;
   subject: string;
-  type: 'result_published' | 'account_approved' | 'account_registered' | 'exam_scheduled' | 'integrity_alert';
+  type: 
+    | 'result_published' 
+    | 'account_approved' 
+    | 'account_registered' 
+    | 'exam_scheduled' 
+    | 'integrity_alert'
+    | 'strike_warning'
+    | 'exam_terminated'
+    | 'proctoring_clearance'
+    | 'faculty_notification'
+    | 'admin_notification';
   status: 'delivered' | 'queued' | 'simulated';
   timestamp: string;
   contentSnippet: string;
@@ -172,6 +182,8 @@ export interface AutomatedMailLog {
     percentage?: number;
     passed?: boolean;
     reportId?: string;
+    enrolledCount?: number;
+    [key: string]: any;
   };
 }
 

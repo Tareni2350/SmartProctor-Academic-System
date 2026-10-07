@@ -4,8 +4,7 @@ import {
   Exam, 
   ExamAttempt, 
   SystemStats,
-  AutomatedMailLog,
-  DatabaseArchitectureInfo 
+  AutomatedMailLog 
 } from '../../types';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -48,7 +47,7 @@ import {
 } from 'lucide-react';
 
 interface AdminDashboardProps {
-  initialTab?: 'overview' | 'approvals' | 'users' | 'exams' | 'departments' | 'reports' | 'mails' | 'technical';
+  initialTab?: 'overview' | 'approvals' | 'users' | 'exams' | 'departments' | 'reports' | 'mails';
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview' }) => {
@@ -58,10 +57,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
   const [submissions, setSubmissions] = useState<ExamAttempt[]>([]);
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [mailLogs, setMailLogs] = useState<AutomatedMailLog[]>([]);
-  const [databaseSpec, setDatabaseSpec] = useState<DatabaseArchitectureInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'approvals' | 'users' | 'exams' | 'departments' | 'reports' | 'mails' | 'technical'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'approvals' | 'users' | 'exams' | 'departments' | 'reports' | 'mails'>(initialTab);
   const [searchUserQuery, setSearchUserQuery] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState<'all' | 'student' | 'faculty'>('all');
   const [userStatusFilter, setUserStatusFilter] = useState<'all' | 'active' | 'pending' | 'rejected' | 'inactive'>('all');
@@ -105,20 +103,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
   const loadAdminData = async () => {
     setIsLoading(true);
     try {
-      const [fetchedUsers, fetchedExams, fetchedSubmissions, fetchedStats, fetchedMails, fetchedDb] = await Promise.all([
+      const [fetchedUsers, fetchedExams, fetchedSubmissions, fetchedStats, fetchedMails] = await Promise.all([
         api.getUsers(),
         api.getExams(),
         api.getSubmissions(),
         api.getSystemStats(),
-        api.getMailLogs().catch(() => []),
-        api.getDatabaseSpec().catch(() => null)
+        api.getMailLogs().catch(() => [])
       ]);
       setUsers(fetchedUsers);
       setExams(fetchedExams);
       setSubmissions(fetchedSubmissions);
       setStats(fetchedStats);
       setMailLogs(fetchedMails);
-      setDatabaseSpec(fetchedDb);
     } catch (err) {
       console.error('Failed to load admin data:', err);
     } finally {
@@ -386,25 +382,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
           onClick={() => setActiveTab('mails')}
           className={`px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
             activeTab === 'mails'
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-sm shadow-cyan-500/30'
+              ? 'bg-fuchsia-500 text-white shadow-sm shadow-fuchsia-500/30'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <Mail className="w-4 h-4 text-cyan-500" />
+          <Mail className="w-4 h-4 text-fuchsia-500" />
           <span>Automated Mails ({mailLogs.length})</span>
-        </button>
-
-        {/* NEW: Admin Technical & Database Specs Tab (Admin-Only restricted) */}
-        <button
-          onClick={() => setActiveTab('technical')}
-          className={`px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
-            activeTab === 'technical'
-              ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-          }`}
-        >
-          <Database className="w-4 h-4 text-fuchsia-400" />
-          <span>Database & Technical Specs</span>
         </button>
       </div>
 
@@ -412,15 +395,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
       {activeTab === 'overview' && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 text-xs font-semibold mb-2">
                 <span>ENROLLED STUDENTS</span>
-                <GraduationCap className="w-4 h-4 text-emerald-600" />
+                <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <div className="text-2xl font-bold font-mono text-slate-900">
-                {users.filter(u => u.role === 'student' && u.status === 'active').length * 42}
+              <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                {users.filter(u => u.role === 'student').length}
               </div>
-              <div className="text-[11px] text-emerald-600 mt-1">Active verified students</div>
+              <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">
+                {users.filter(u => u.role === 'student' && u.status === 'active').length} active verified · {users.filter(u => u.role === 'student' && u.status === 'pending').length} pending
+              </div>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
@@ -941,7 +926,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               <div>Total Tests Conducted: <strong className="text-slate-900 font-bold">{submissions.length}</strong></div>
               <div>Institutional Pass Rate: <strong className="text-emerald-700 font-bold">88.2%</strong></div>
               <div>Proctoring Flags Reviewed: <strong className="text-amber-700 font-bold">{submissions.filter(s => s.monitoringRiskLevel !== 'Low').length}</strong></div>
-              <div>AI Validated Questions: <strong className="text-cyan-700 font-bold">{stats?.questionBankSize || 25}</strong></div>
+              <div>AI Validated Questions: <strong className="text-fuchsia-700 font-bold">{stats?.questionBankSize || 25}</strong></div>
             </div>
           </div>
 
@@ -1020,7 +1005,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
             <div>
-              <div className="flex items-center gap-2 text-xs font-headline font-bold text-cyan-600 mb-1">
+              <div className="flex items-center gap-2 text-xs font-headline font-bold text-fuchsia-600 mb-1">
                 <Mail className="w-4 h-4" />
                 <span>COMMUNICATIONS AUTOMATION ENGINE</span>
               </div>
@@ -1061,7 +1046,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
               <span className="text-[11px] font-headline font-bold uppercase tracking-wider text-slate-400 block">Account Notifications</span>
-              <div className="text-2xl font-black font-code text-cyan-600 mt-1">
+              <div className="text-2xl font-black font-code text-fuchsia-600 mt-1">
                 {mailLogs.filter(m => m.type === 'account_approved' || m.type === 'account_registered').length}
               </div>
               <span className="text-[11px] text-slate-500 font-medium">Welcome & approval verifications</span>
@@ -1074,7 +1059,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               <h3 className="font-headline font-bold text-slate-900 text-sm">
                 Recent Automated Email Transactions ({mailLogs.length})
               </h3>
-              <span className="badge-pill-cyan text-[10px] px-2.5 py-0.5">SMTP / Cloud Mailer: Active</span>
+              <span className="badge-pill-fuchsia text-[10px] px-2.5 py-0.5">SMTP / Cloud Mailer: Active</span>
             </div>
 
             <div className="overflow-x-auto">
@@ -1107,7 +1092,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                           log.type === 'result_published' ? 'bg-fuchsia-100 text-fuchsia-800' :
                           log.type === 'account_approved' ? 'bg-emerald-100 text-emerald-800' :
                           log.type === 'integrity_alert' ? 'bg-rose-100 text-rose-800' :
-                          'bg-cyan-100 text-cyan-800'
+                          'bg-fuchsia-100 text-fuchsia-800'
                         }`}>
                           {log.type.replace('_', ' ').toUpperCase()}
                         </span>
@@ -1133,223 +1118,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
         </div>
       )}
 
-      {/* TAB 8: TECHNICAL DATABASE ARCHITECTURE (ADMIN ONLY RESTRICTED) */}
-      {activeTab === 'technical' && (
-        <div className="space-y-6">
-          {/* Admin Technical Security Notice */}
-          <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-fuchsia-600 flex items-center justify-center text-white shrink-0">
-                <Database className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-headline font-bold text-sm text-white">
-                    Administrator Confidential: Infrastructure & Database Architecture
-                  </h3>
-                  <span className="px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 text-[10px] font-mono border border-fuchsia-500/30">
-                    RESTRICTED VIEW
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300 font-body mt-0.5">
-                  Technical specifications, schema topologies, and storage engines are exclusively accessible to logged-in system administrators.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={loadAdminData}
-              className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-headline font-bold flex items-center gap-1.5 border border-white/15 transition-all self-start sm:self-auto"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Refresh Telemetry</span>
-            </button>
-          </div>
-
-          {/* Database Specs Card */}
-          {databaseSpec && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 text-xs font-headline font-bold text-indigo-600 uppercase">
-                  <Server className="w-4 h-4" />
-                  <span>PRIMARY DATABASE ENGINE</span>
-                </div>
-                <div>
-                  <h4 className="text-lg font-headline font-black text-slate-900">
-                    {databaseSpec.engine}
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-1 font-body">
-                    {databaseSpec.mode} · Version: <span className="font-mono text-slate-800">{databaseSpec.version}</span>
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-slate-100 text-xs space-y-2 text-slate-600">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Persistence Model:</span>
-                    <span className="font-semibold">{databaseSpec.storageTelemetry.persistenceStrategy}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Backup Policy:</span>
-                    <span className="font-semibold text-emerald-700">{databaseSpec.storageTelemetry.backupStatus}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 text-xs font-headline font-bold text-emerald-600 uppercase">
-                  <Activity className="w-4 h-4" />
-                  <span>CONNECTION POOL & LATENCY</span>
-                </div>
-                <div>
-                  <div className="text-3xl font-black font-code text-slate-900">
-                    {databaseSpec.connectionPool.latencyMs} <span className="text-sm font-normal text-slate-400">ms</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1 font-body">
-                    Average query latency across in-memory document operations.
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-slate-100 text-xs space-y-2 text-slate-600 font-mono">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Active Connections:</span>
-                    <span className="font-bold text-slate-800">{databaseSpec.connectionPool.activeConnections} / {databaseSpec.connectionPool.maxCapacity}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Idle Pool Count:</span>
-                    <span className="font-bold text-slate-800">{databaseSpec.connectionPool.idleConnections}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 text-xs font-headline font-bold text-cyan-600 uppercase">
-                  <HardDrive className="w-4 h-4" />
-                  <span>MEMORY FOOTPRINT & CACHE</span>
-                </div>
-                <div>
-                  <div className="text-3xl font-black font-code text-slate-900">
-                    {databaseSpec.storageTelemetry.usedMB} <span className="text-sm font-normal text-slate-400">MB Used</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1 font-body">
-                    Allocated: {databaseSpec.storageTelemetry.allocatedMB} MB · Cache Hit Ratio: {(databaseSpec.storageTelemetry.cacheHitRatio * 100).toFixed(1)}%
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-slate-100 text-xs space-y-2 text-slate-600">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Indexing Strategy:</span>
-                    <span className="font-semibold text-slate-800">B-Tree + Hash Indexes</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Thread Isolation:</span>
-                    <span className="font-semibold text-emerald-700">Async Safe Loop</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Database Schema & Collection Breakdown Table */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-headline font-bold text-slate-900">
-                  Database Collections & Schema Topology
-                </h3>
-                <p className="text-xs text-slate-500 font-body">
-                  Detailed schema specifications and purpose for each collection in the SmartProctor database.
-                </p>
-              </div>
-              <span className="badge-pill-cyan text-[10px] px-2.5 py-0.5">5 Active Collections</span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 font-headline font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
-                  <tr>
-                    <th className="p-4">Collection Name</th>
-                    <th className="p-4">Records</th>
-                    <th className="p-4">Purpose & Business Logic</th>
-                    <th className="p-4">Schema Definition</th>
-                    <th className="p-4">Storage Engine</th>
-                    <th className="p-4">Indexing</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-body">
-                  {databaseSpec?.collections.map((col, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="p-4">
-                        <span className="px-2 py-1 rounded bg-slate-100 font-mono font-bold text-slate-900 text-xs">
-                          {col.name}
-                        </span>
-                      </td>
-                      <td className="p-4 font-mono font-bold text-indigo-700 text-sm">
-                        {col.documentCount}
-                      </td>
-                      <td className="p-4 max-w-xs text-slate-700 text-[11px] leading-relaxed">
-                        {col.purpose}
-                      </td>
-                      <td className="p-4 max-w-xs">
-                        <code className="text-[10px] bg-slate-50 border border-slate-200 p-1.5 rounded block text-slate-700 font-mono break-all">
-                          {col.schemaSummary}
-                        </code>
-                      </td>
-                      <td className="p-4 font-mono text-[11px] text-slate-600">
-                        {col.storageEngine}
-                      </td>
-                      <td className="p-4 text-[11px] text-slate-500 font-mono">
-                        {col.indexingStrategy}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* AI Architecture Telemetry (Admin Restricted) */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-white">
-                  <Bot className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-headline font-bold text-sm text-slate-900">
-                    Autonomous Multi-Agent AI Architecture Specifications
-                  </h3>
-                  <span className="text-[11px] text-slate-500 font-body">
-                    Model: Google Gemini 2.5 Flash with deterministic heuristic failover guards
-                  </span>
-                </div>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-headline font-bold">
-                6 Multi-Agents Online
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs pt-2">
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="font-headline font-bold text-slate-900">Agent 01: Question Authoring</div>
-                <p className="text-[11px] text-slate-500 mt-1 font-body">
-                  Generates rigorous questions across target Bloom's taxonomies with plausible distractors.
-                </p>
-              </div>
-
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="font-headline font-bold text-slate-900">Agent 02: Question Quality Audit</div>
-                <p className="text-[11px] text-slate-500 mt-1 font-body">
-                  Inspects drafts for ambiguity, multiple correct keys, and difficulty leakage.
-                </p>
-              </div>
-
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="font-headline font-bold text-slate-900">Agent 05: Proctoring Monitoring</div>
-                <p className="text-[11px] text-slate-500 mt-1 font-body">
-                  Processes window blurs, rapid answering, and session stability into balanced risk scores.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* TAB 7: AUTOMATED MAIL DISPATCH & LOGS */}
 
       {/* MANUAL MAIL COMPOSER MODAL */}
       {isMailComposerOpen && (
@@ -1357,7 +1126,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
           <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 space-y-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-cyan-600 text-white flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-fuchsia-600 text-white flex items-center justify-center">
                   <Mail className="w-4 h-4" />
                 </div>
                 <h3 className="text-base font-headline font-bold text-slate-900">
@@ -1474,7 +1243,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
           <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 space-y-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-fuchsia-600 text-white flex items-center justify-center">
                   <UserPlus className="w-4 h-4" />
                 </div>
                 <h3 className="text-base font-bold text-slate-900">Provision Academic Account</h3>

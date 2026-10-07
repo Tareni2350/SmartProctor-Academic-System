@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bookBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C026D3" />
+      <stop offset="50%" stop-color="#D946EF" />
+      <stop offset="100%" stop-color="#EC4899" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#701A75" flood-opacity="0.3" />
+    </filter>
+  </defs>
+  
+  <!-- Rounded Icon Shield Background in Previous Fuchsia/Pink Theme Color -->
+  <rect width="64" height="64" rx="16" fill="url(#bookBg)" />
+  <rect x="1.5" y="1.5" width="61" height="61" rx="14.5" stroke="white" stroke-opacity="0.3" stroke-width="1.5" />
+  
+  <!-- Open Academic Book Body -->
+  <path d="M11 46.5C18 43.5 26.5 43.5 32 47.5C37.5 43.5 46 43.5 53 46.5V20.5C46 17.5 37.5 17.5 32 21.5C26.5 17.5 18 17.5 11 20.5V46.5Z" fill="#FFFFFF" filter="url(#shadow)" />
+  
+  <!-- Left Page Details (Fuchsia Theme) -->
+  <path d="M16 27C21 25.2 26 25.2 29 27.2" stroke="#C026D3" stroke-width="2" stroke-linecap="round" />
+  <path d="M16 32.5C21 30.7 26 30.7 29 32.7" stroke="#D946EF" stroke-width="2" stroke-linecap="round" />
+  <path d="M16 38C21 36.2 26 36.2 29 38.2" stroke="#F472B6" stroke-width="2" stroke-linecap="round" />
+  
+  <!-- Right Page Details (Fuchsia Theme) -->
+  <path d="M48 27C43 25.2 38 25.2 35 27.2" stroke="#C026D3" stroke-width="2" stroke-linecap="round" />
+  <path d="M48 32.5C43 30.7 38 30.7 35 32.7" stroke="#D946EF" stroke-width="2" stroke-linecap="round" />
+  <path d="M48 38C43 36.2 38 36.2 35 38.2" stroke="#F472B6" stroke-width="2" stroke-linecap="round" />
+  
+  <!-- Book Spine Center Binding -->
+  <path d="M32 21.5V47.5" stroke="#A21CAF" stroke-width="2.5" stroke-linecap="round" />
+  
+  <!-- Golden Academic Bookmark Ribbon -->
+  <path d="M30 16V29L33.5 26.5L37 29V16.5" fill="#F59E0B" />
+  <path d="M30 16V29L33.5 26.5L37 29V16.5" stroke="#D97706" stroke-width="0.75" />
+</svg>

@@ -27,10 +27,11 @@ import {
 import { AIQuestionStudioModal } from './AIQuestionStudioModal';
 import { AIExamCreatorModal } from './AIExamCreatorModal';
 import { UploadQuestionPaperModal } from './UploadQuestionPaperModal';
+import { AutomatedMailsViewer } from '../common/AutomatedMailsViewer';
 
 export const FacultyDashboard: React.FC = () => {
   const { currentUser } = useAuth();
-  const [activeTab, setActiveTab] = useState<'exams' | 'question_bank' | 'submissions' | 'ai_insights' | 'proctoring'>('exams');
+  const [activeTab, setActiveTab] = useState<'exams' | 'question_bank' | 'submissions' | 'ai_insights' | 'proctoring' | 'mails'>('exams');
 
   const [exams, setExams] = useState<Exam[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -194,9 +195,9 @@ export const FacultyDashboard: React.FC = () => {
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={() => setIsUploadQuestionPaperOpen(true)}
-            className="px-4 py-2.5 rounded-full bg-cyan-50 border border-cyan-300 hover:border-cyan-400 text-cyan-800 text-xs font-headline font-bold flex items-center gap-2 shadow-xs transition-all hover:scale-105 active:scale-95"
+            className="px-4 py-2.5 rounded-full bg-fuchsia-50 border border-fuchsia-300 hover:border-fuchsia-400 text-fuchsia-900 text-xs font-headline font-bold flex items-center gap-2 shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <UploadCloud className="w-3.5 h-3.5 text-cyan-600" />
+            <UploadCloud className="w-3.5 h-3.5 text-fuchsia-600" />
             <span>Upload Question Paper</span>
           </button>
 
@@ -260,11 +261,11 @@ export const FacultyDashboard: React.FC = () => {
           onClick={() => setActiveTab('ai_insights')}
           className={`px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
             activeTab === 'ai_insights'
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-sm shadow-cyan-500/30'
-              : 'bg-cyan-50 text-cyan-900 hover:bg-cyan-100'
+              ? 'bg-fuchsia-500 text-white shadow-sm shadow-fuchsia-500/30'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <BarChart3 className="w-4 h-4 text-cyan-600" />
+          <BarChart3 className="w-4 h-4 text-fuchsia-600" />
           <span>AI Class Analytics Agent</span>
         </button>
 
@@ -278,6 +279,18 @@ export const FacultyDashboard: React.FC = () => {
         >
           <ShieldAlert className="w-4 h-4 text-amber-700" />
           <span>AI Monitoring Anomaly Flags</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('mails')}
+          className={`px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
+            activeTab === 'mails'
+              ? 'bg-slate-900 text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <Mail className="w-4 h-4 text-fuchsia-500" />
+          <span>Automated Mails & Dispatches</span>
         </button>
       </div>
 
@@ -814,6 +827,17 @@ export const FacultyDashboard: React.FC = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* TAB 6: AUTOMATED MAILS & DISPATCHES */}
+      {activeTab === 'mails' && (
+        <div className="space-y-6">
+          <AutomatedMailsViewer
+            userEmail={currentUser.email}
+            title="Faculty Automated Notifications & Examination Dispatches"
+            description="Institutional transactional emails automatically dispatched regarding question papers, student notifications, and test submissions."
+          />
         </div>
       )}
 

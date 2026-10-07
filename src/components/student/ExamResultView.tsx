@@ -168,7 +168,7 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({ attempt, exam, o
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-slate-100">
           <div>
             <div className="flex items-center gap-2 text-xs font-headline font-bold text-fuchsia-600 mb-1">
-              <span className="badge-pill-cyan text-[10px] px-2.5 py-0.5 font-mono">{exam.courseCode}</span>
+              <span className="badge-pill-fuchsia text-[10px] px-2.5 py-0.5 font-mono">{exam.courseCode}</span>
               <span className="text-slate-300">·</span>
               <span className="uppercase tracking-wider">{exam.department}</span>
             </div>
@@ -312,8 +312,8 @@ export const ExamResultView: React.FC<ExamResultViewProps> = ({ attempt, exam, o
           onClick={() => setActiveTab('study_agent')}
           className={`px-4 py-2 rounded-full transition-all flex items-center gap-1.5 ${
             activeTab === 'study_agent'
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-sm shadow-cyan-500/30'
-              : 'bg-cyan-50 text-cyan-900 hover:bg-cyan-100'
+              ? 'bg-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/30'
+              : 'bg-fuchsia-50 text-fuchsia-900 hover:bg-fuchsia-100'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5" />

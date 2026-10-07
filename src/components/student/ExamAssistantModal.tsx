@@ -85,7 +85,7 @@ export const ExamAssistantModal: React.FC<ExamAssistantModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-white font-body">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-pink-500 flex items-center justify-center text-white shadow-md shadow-fuchsia-500/20">
               <Bot className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -93,7 +93,7 @@ export const ExamAssistantModal: React.FC<ExamAssistantModalProps> = ({
                 <h3 className="text-base font-headline font-black text-slate-900 leading-tight">
                   AI Exam Tutor & Regulation Assistant
                 </h3>
-                <span className="badge-pill-cyan text-[10px] px-2.5 py-0.5">
+                <span className="badge-pill-fuchsia text-[10px] px-2.5 py-0.5">
                   Guidance
                 </span>
               </div>
@@ -128,7 +128,7 @@ export const ExamAssistantModal: React.FC<ExamAssistantModalProps> = ({
           </span>
           <span className="text-slate-300">·</span>
           <span className="flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-cyan-600" />
+            <FileText className="w-3.5 h-3.5 text-fuchsia-600" />
             Total: <strong className="font-code font-bold text-slate-900">{exam.totalMarks} marks</strong> (Pass: {exam.passingMarks})
           </span>
           <span className="text-slate-300">·</span>

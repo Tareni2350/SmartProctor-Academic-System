@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { UserRole } from '../../types';
 import { 
   Sparkles, 
   ShieldCheck, 
@@ -9,14 +8,12 @@ import {
   Lock, 
   Mail, 
   User, 
-  Building2, 
   IdCard, 
   AlertCircle, 
   CheckCircle2, 
   Clock, 
   ArrowRight,
-  ShieldAlert,
-  HelpCircle
+  ShieldAlert
 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -24,7 +21,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
-  const { login, register, allUsers, loginAs } = useAuth();
+  const { login, register } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'register'>('signin');
   const [email, setEmail] = useState('');
@@ -46,9 +43,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [regIdentifier, setRegIdentifier] = useState('');
   const [regSuccessUser, setRegSuccessUser] = useState<any | null>(null);
 
+  // Helper to fill credentials for testing without bypassing the normal sign-in flow
+  const handleFillCredentials = (fillEmail: string) => {
+    setEmail(fillEmail);
+    setPassword('password123');
+    setErrorMessage(null);
+    setPendingNotice(null);
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
+    if (!email.trim()) {
       setErrorMessage('Please enter your institutional email address.');
       return;
     }
@@ -58,7 +63,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setPendingNotice(null);
 
     try {
-      const result = await login(email, password);
+      const result = await login(email.trim(), password);
       if (result.success) {
         onLoginSuccess?.();
       } else {
@@ -73,7 +78,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         }
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Unable to connect to authentication server.');
+      setErrorMessage(err.message || 'Unable to connect to authentication service.');
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +86,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName || !regEmail) {
+    if (!regName.trim() || !regEmail.trim()) {
       setErrorMessage('Please complete all required fields.');
       return;
     }
@@ -92,12 +97,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
     try {
       const result = await register({
-        name: regName,
-        email: regEmail,
+        name: regName.trim(),
+        email: regEmail.trim(),
         password: regPassword,
         role: regRole,
         department: regDepartment,
-        identifier: regIdentifier || `${regRole === 'student' ? 'STU' : 'FAC'}-${Math.floor(1000 + Math.random() * 9000)}`
+        identifier: regIdentifier.trim() || `${regRole === 'student' ? 'STU' : 'FAC'}-${Math.floor(1000 + Math.random() * 9000)}`
       });
 
       if (result.success) {
@@ -112,48 +117,26 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  const handleQuickDemoLogin = async (userEmail: string) => {
-    setEmail(userEmail);
-    setPassword('password123');
-    setIsLoading(true);
-    setErrorMessage(null);
-    setPendingNotice(null);
-
-    const result = await login(userEmail, 'password123');
-    setIsLoading(false);
-    if (result.success) {
-      onLoginSuccess?.();
-    } else if (result.status === 'pending') {
-      setPendingNotice({
-        userName: result.user?.name || 'Applicant',
-        role: result.user?.role || 'User',
-        email: userEmail
-      });
-    } else {
-      setErrorMessage(result.error || 'Login failed.');
-    }
-  };
-
   return (
-    <div className="min-h-[calc(100vh-4.5rem)] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#FAFAFA] font-body">
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50 font-body">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
         {/* Brand Icon */}
-        <div className="inline-flex p-3.5 rounded-3xl bg-gradient-to-tr from-fuchsia-600 via-fuchsia-500 to-cyan-400 text-white shadow-lg shadow-fuchsia-500/25 ring-4 ring-white">
-          <Sparkles className="w-8 h-8" />
+        <div className="inline-flex p-3 rounded-2xl bg-gradient-to-tr from-fuchsia-600 via-fuchsia-500 to-pink-500 text-white shadow-md shadow-fuchsia-500/25 ring-4 ring-white">
+          <Sparkles className="w-7 h-7" />
         </div>
 
-        <h2 className="text-3xl sm:text-4xl font-headline font-black text-slate-900 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-headline font-black text-slate-900 tracking-tight">
           Smart<span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-600 to-pink-500">Proctor</span> Portal
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto font-body">
-          Unified Multi-Role Online Examination, Automated Reports & Integrity System
+          Institutional Examination, Proctoring & Result System
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white py-8 px-6 sm:px-10 shadow-lg shadow-slate-200/50 border border-slate-200/80 rounded-3xl space-y-6">
-          {/* ShopVibe Pill Mode Switcher Tabs */}
-          <div className="flex p-1 bg-slate-100/90 rounded-full border border-slate-200/60">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-lg">
+        <div className="bg-white py-8 px-6 sm:px-10 shadow-lg shadow-slate-200/50 border border-slate-200 rounded-3xl space-y-6">
+          {/* Mode Switcher Tabs */}
+          <div className="flex p-1 bg-slate-100 rounded-full border border-slate-200">
             <button
               type="button"
               onClick={() => {
@@ -161,9 +144,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 setErrorMessage(null);
                 setPendingNotice(null);
               }}
-              className={`flex-1 py-2.5 text-xs font-headline font-bold rounded-full transition-all ${
+              className={`flex-1 py-2 text-xs font-headline font-bold rounded-full transition-all cursor-pointer ${
                 mode === 'signin'
-                  ? 'bg-fuchsia-500 text-white shadow-sm shadow-fuchsia-500/25'
+                  ? 'bg-fuchsia-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -176,9 +159,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 setErrorMessage(null);
                 setPendingNotice(null);
               }}
-              className={`flex-1 py-2.5 text-xs font-headline font-bold rounded-full transition-all ${
+              className={`flex-1 py-2 text-xs font-headline font-bold rounded-full transition-all cursor-pointer ${
                 mode === 'register'
-                  ? 'bg-fuchsia-500 text-white shadow-sm shadow-fuchsia-500/25'
+                  ? 'bg-fuchsia-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -188,8 +171,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
           {/* Pending Approval Notice Banner */}
           {pendingNotice && (
-            <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 space-y-3 animate-in fade-in">
-              <div className="flex items-start gap-3">
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2.5 animate-in fade-in">
+              <div className="flex items-start gap-2.5">
                 <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div className="space-y-1 text-xs">
                   <div className="font-headline font-bold text-amber-950 text-sm">
@@ -199,20 +182,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     The profile for <strong>{pendingNotice.userName}</strong> ({pendingNotice.role.toUpperCase()}) with email <em>{pendingNotice.email}</em> has been submitted and is currently <strong>Pending Verification</strong> by an Academic Administrator.
                   </p>
                   <p className="text-[11px] text-amber-700">
-                    To maintain institutional exam integrity, students and faculty must be verified by the admin before signing in.
+                    To maintain exam integrity, all candidates and faculty must be approved before access is granted.
                   </p>
                 </div>
-              </div>
-
-              <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-xs">
-                <span className="text-[11px] text-amber-700">Want to test approval workflow now?</span>
-                <button
-                  onClick={() => handleQuickDemoLogin('m.hamilton@university.edu')}
-                  className="px-4 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-full font-headline font-bold text-xs transition-colors flex items-center gap-1.5 shadow-xs"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Log in as Admin to Approve</span>
-                </button>
               </div>
             </div>
           )}
@@ -227,54 +199,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
           {/* Registration Success Banner */}
           {regSuccessUser && (
-            <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-3">
-              <div className="flex items-start gap-3">
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-2.5">
+              <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div className="space-y-1 text-xs">
                   <div className="font-bold text-emerald-950 text-sm">
                     Registration Submitted Successfully!
                   </div>
                   <p className="text-emerald-800 leading-relaxed">
-                    Profile created for <strong>{regSuccessUser.name}</strong> as a <strong>{regSuccessUser.role.toUpperCase()}</strong> in <em>{regSuccessUser.department}</em>.
+                    Profile created for <strong>{regSuccessUser.name}</strong> as a <strong>{regSuccessUser.role.toUpperCase()}</strong>.
                   </p>
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 font-bold text-[11px]">
                     <Clock className="w-3.5 h-3.5" />
                     <span>STATUS: PENDING ADMIN APPROVAL</span>
                   </div>
                   <p className="text-[11px] text-emerald-700 pt-1">
-                    Your account has been forwarded to the Academic Administrator's Pending Queue. Once approved, you can sign in with your email and password.
+                    Your profile has been forwarded to the Administrative Verification queue. Once approved, you can sign in with your email and password.
                   </p>
                 </div>
-              </div>
-
-              <div className="pt-2 border-t border-emerald-200/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
-                <button
-                  onClick={() => {
-                    setEmail(regSuccessUser.email);
-                    setMode('signin');
-                    setRegSuccessUser(null);
-                  }}
-                  className="text-emerald-800 hover:text-emerald-950 font-semibold underline"
-                >
-                  Back to Sign In Form
-                </button>
-
-                <button
-                  onClick={() => handleQuickDemoLogin('m.hamilton@university.edu')}
-                  className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-xs transition-colors flex items-center gap-1.5"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Log in as Admin to Approve Now</span>
-                </button>
               </div>
             </div>
           )}
 
-          {/* SIGN IN FORM */}
+          {/* SIGN IN FORM (Normal Sign In Flow) */}
           {mode === 'signin' && (
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1 font-headline">
                   Institutional Email Address
                 </label>
                 <div className="relative">
@@ -285,13 +236,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="e.g. alex.rivera@university.edu"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all font-mono"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:bg-white transition-all font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1 font-headline">
                   Password
                 </label>
                 <div className="relative">
@@ -302,21 +253,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter password"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:bg-white transition-all"
                   />
                 </div>
-                <div className="flex justify-between items-center text-[11px] text-slate-400 mt-1">
-                  <span>Default demo password: <code className="font-mono text-slate-600">password123</code></span>
+                <div className="text-[11px] text-slate-400 mt-1">
+                  Default demo password: <code className="font-mono text-slate-600">password123</code>
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 px-5 btn-shopvibe-primary text-xs font-headline font-bold flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-95 cursor-pointer"
+                className="w-full py-3 px-5 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white rounded-xl text-xs font-headline font-bold flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-sm cursor-pointer"
               >
                 {isLoading ? (
-                  <span>Authenticating Candidate...</span>
+                  <span>Authenticating Account...</span>
                 ) : (
                   <>
                     <span>Sign In to Academic Portal</span>
@@ -324,6 +275,41 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   </>
                 )}
               </button>
+
+              {/* Convenient Quick-Fill Chips for Form Testing */}
+              <div className="pt-3 border-t border-slate-100">
+                <span className="text-[11px] text-slate-500 font-medium block mb-2">
+                  Auto-fill demo credentials into form:
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleFillCredentials('alex.rivera@university.edu')}
+                    className="p-2 rounded-xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/70 text-left transition-colors cursor-pointer"
+                  >
+                    <div className="text-[11px] font-headline font-bold text-emerald-950 truncate">Alex Rivera</div>
+                    <div className="text-[10px] text-emerald-700 font-semibold">Student</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleFillCredentials('alan.turing@university.edu')}
+                    className="p-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 hover:bg-fuchsia-100/70 text-left transition-colors cursor-pointer"
+                  >
+                    <div className="text-[11px] font-headline font-bold text-fuchsia-950 truncate">Dr. Turing</div>
+                    <div className="text-[10px] text-fuchsia-700 font-semibold">Faculty</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleFillCredentials('m.hamilton@university.edu')}
+                    className="p-2 rounded-xl border border-purple-200 bg-purple-50/60 hover:bg-purple-100/70 text-left transition-colors cursor-pointer"
+                  >
+                    <div className="text-[11px] font-headline font-bold text-purple-950 truncate">Dean Hamilton</div>
+                    <div className="text-[10px] text-purple-700 font-semibold">Admin</div>
+                  </button>
+                </div>
+              </div>
             </form>
           )}
 
@@ -339,36 +325,36 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   <button
                     type="button"
                     onClick={() => setRegRole('student')}
-                    className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${
+                    className={`p-3 rounded-2xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                       regRole === 'student'
                         ? 'border-fuchsia-500 bg-fuchsia-50/70 ring-2 ring-fuchsia-500/20 shadow-xs'
                         : 'border-slate-200 bg-white hover:bg-slate-50'
                     }`}
                   >
-                    <div className="w-9 h-9 rounded-xl bg-cyan-100 text-cyan-800 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
                       <GraduationCap className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-headline font-bold text-slate-900">Student Profile</div>
-                      <div className="text-[10px] text-slate-500">Exams & Adaptive Tutoring</div>
+                      <div className="text-xs font-headline font-bold text-slate-900">Student</div>
+                      <div className="text-[10px] text-slate-500">Exams & Scorecards</div>
                     </div>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setRegRole('faculty')}
-                    className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${
+                    className={`p-3 rounded-2xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                       regRole === 'faculty'
                         ? 'border-fuchsia-500 bg-fuchsia-50/70 ring-2 ring-fuchsia-500/20 shadow-xs'
                         : 'border-slate-200 bg-white hover:bg-slate-50'
                     }`}
                   >
-                    <div className="w-9 h-9 rounded-xl bg-fuchsia-100 text-fuchsia-700 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-fuchsia-100 text-fuchsia-700 flex items-center justify-center shrink-0">
                       <BookOpen className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-headline font-bold text-slate-900">Faculty Studio</div>
-                      <div className="text-[10px] text-slate-500">Exam Authoring & Analytics</div>
+                      <div className="text-xs font-headline font-bold text-slate-900">Faculty</div>
+                      <div className="text-[10px] text-slate-500">Authoring & Analytics</div>
                     </div>
                   </button>
                 </div>
@@ -376,7 +362,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1 font-headline">
                   Full Name
                 </label>
                 <div className="relative">
@@ -387,14 +373,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
                     placeholder="e.g. Elena Rostova"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1 font-headline">
                   Institutional Email Address
                 </label>
                 <div className="relative">
@@ -405,7 +391,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                     placeholder="e.g. elena.rostova@university.edu"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all font-mono"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:bg-white transition-all font-mono"
                   />
                 </div>
               </div>
@@ -413,13 +399,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               {/* Department & Identifier */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1 font-headline">
                     Department
                   </label>
                   <select
                     value={regDepartment}
                     onChange={(e) => setRegDepartment(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:bg-white transition-all"
                   >
                     <option value="Computer Science & Engineering">Computer Science & Engineering</option>
                     <option value="Information Technology">Information Technology</option>
@@ -430,8 +416,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
-                    {regRole === 'student' ? 'Student Roll Number' : 'Faculty Employee ID'}
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1 font-headline">
+                    {regRole === 'student' ? 'Roll Number' : 'Employee ID'}
                   </label>
                   <div className="relative">
                     <IdCard className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -440,7 +426,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                       value={regIdentifier}
                       onChange={(e) => setRegIdentifier(e.target.value)}
                       placeholder={regRole === 'student' ? 'e.g. CS-2026-114' : 'e.g. FAC-IT-204'}
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all font-mono"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:bg-white transition-all font-mono"
                     />
                   </div>
                 </div>
@@ -448,7 +434,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
               {/* Password */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1 font-headline">
                   Create Password
                 </label>
                 <div className="relative">
@@ -459,23 +445,23 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     placeholder="Enter password"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
-              {/* Approval Disclaimer */}
+              {/* Approval Notice */}
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-start gap-2">
                 <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <p>
-                  <strong>Admin Approval Required:</strong> All newly submitted student and faculty profiles are placed in the Administrative Verification queue. The Academic Administrator must approve your profile before examination access is permitted.
+                  <strong>Admin Approval Required:</strong> All newly submitted profiles require administrative approval before exam access is permitted.
                 </p>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 px-5 btn-shopvibe-primary text-xs font-headline font-bold flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-95 cursor-pointer"
+                className="w-full py-3 px-5 bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white rounded-xl text-xs font-headline font-bold flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-sm cursor-pointer"
               >
                 {isLoading ? (
                   <span>Submitting Profile for Admin Review...</span>
@@ -488,96 +474,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               </button>
             </form>
           )}
-
-          {/* QUICK DEMO PERSONA SELECTOR */}
-          <div className="border-t border-slate-100 pt-5 space-y-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-700 uppercase tracking-wide text-[11px]">
-                Quick Demo Personas (Instant Access)
-              </span>
-              <span className="text-[10px] text-slate-400">Pre-configured accounts</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('alex.rivera@university.edu')}
-                className="p-2.5 rounded-xl border border-slate-200 hover:border-emerald-400 bg-white hover:bg-emerald-50/40 text-left transition-all group"
-              >
-                <div className="flex items-center gap-2">
-                  <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-                    alt="Alex"
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                  <div className="overflow-hidden">
-                    <div className="text-xs font-bold text-slate-900 truncate">Alex Rivera</div>
-                    <div className="text-[10px] text-emerald-700 font-semibold">Active Student</div>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('alan.turing@university.edu')}
-                className="p-2.5 rounded-xl border border-slate-200 hover:border-indigo-400 bg-white hover:bg-indigo-50/40 text-left transition-all group"
-              >
-                <div className="flex items-center gap-2">
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
-                    alt="Alan"
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                  <div className="overflow-hidden">
-                    <div className="text-xs font-bold text-slate-900 truncate">Dr. Alan Turing</div>
-                    <div className="text-[10px] text-indigo-700 font-semibold">Active Faculty</div>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('m.hamilton@university.edu')}
-                className="p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 bg-white hover:bg-amber-50/40 text-left transition-all group"
-              >
-                <div className="flex items-center gap-2">
-                  <img
-                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80"
-                    alt="Margaret"
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                  <div className="overflow-hidden">
-                    <div className="text-xs font-bold text-slate-900 truncate">Dean Hamilton</div>
-                    <div className="text-[10px] text-amber-700 font-semibold">System Admin</div>
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            {/* Test Pending Approval Accounts */}
-            <div className="pt-2">
-              <div className="text-[11px] text-slate-500 font-medium mb-1.5 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-amber-600" />
-                <span>Test "Pending Approval" Login Gatekeeper:</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('samantha.reed@university.edu')}
-                  className="px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50/50 hover:bg-amber-100/70 text-left text-amber-900 font-medium truncate"
-                >
-                  ⏳ Samantha Reed (Pending Student)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('claude.shannon@university.edu')}
-                  className="px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50/50 hover:bg-amber-100/70 text-left text-amber-900 font-medium truncate"
-                >
-                  ⏳ Prof. Shannon (Pending Faculty)
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -133,7 +133,7 @@ export const AIQuestionStudioModal: React.FC<AIQuestionStudioModalProps> = ({
         {/* Header */}
         <div className="px-6 py-5 border-b border-slate-200/80 flex items-center justify-between bg-white font-body">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-fuchsia-600 via-fuchsia-500 to-cyan-400 flex items-center justify-center text-white shadow-md shadow-fuchsia-500/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-fuchsia-600 via-fuchsia-500 to-pink-500 flex items-center justify-center text-white shadow-md shadow-fuchsia-500/20">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>

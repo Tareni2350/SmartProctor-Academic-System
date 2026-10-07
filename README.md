@@ -44,12 +44,28 @@ SmartProctor integrates **7 specialized AI Agents** built with Gemini 3.8 Flash 
 
 ---
 
-## 📧 Automated Email Notifications
+## 📧 Automated Email Notifications & Profile Inboxes
 
 - **Exam Scheduled & Ready to Attempt**: Whenever an exam is published or scheduled, enrolled students automatically receive an email with exam duration, total questions, passing score, and instructions.
+- **Respective Profile Mail Inboxes**: Students and faculty can view all transactional emails dispatched to their profile directly inside their dashboard (`Official Mail & Inbox` tab) and via the header notifications drawer.
 - **Faculty 1-Click Dispatch**: Faculty can trigger or resend automated exam notifications directly from their dashboard using the **"Notify Students (Automated Mail)"** button.
 - **Instant Result Scorecard**: Students automatically receive an email with their marks, percentage, and diagnostic breakdown upon submission.
 - **Academic Violation Incident Email**: An urgent email alert is automatically dispatched if a student's session is terminated due to proctoring violations.
+
+---
+
+## 🌓 Dark Mode & Accessibility
+
+- **Theme Toggle**: Switch between light and dark modes instantly using the sun/moon button in the top navigation bar.
+- **Persistent State**: Theme preference is automatically remembered across sessions using `localStorage` and system media preferences.
+- **High Contrast**: Designed for optimal readability during lengthy examination and question authoring sessions.
+
+---
+
+## 🏛️ Administrative Governance & Student Roster Sync
+
+- **Synchronized Enrolled Student Counts**: The Enrolled Students metric in the Admin Dashboard is dynamically synchronized with the actual verified student user accounts in the database (no arbitrary multipliers).
+- **Streamlined Dashboard**: Focuses exclusively on academic governance, candidate admissions/approvals, exam schedules, and audit reports without distracting technical specifications.
 
 ---
 
@@ -79,6 +95,19 @@ The exam palette displays live status indicators so students always know their p
 | 🔲 | **Current Question** | Currently active question with focus outline |
 
 *Quick Action: Students can use the **"Mark for Review & Next"** button to flag and advance in one click.*
+
+---
+
+## 🔐 Authentication & Strict Role Isolation
+
+SmartProctor implements a standard real-world institutional authentication workflow:
+- **Normal Sign-In Process**: Users must sign in with their registered institutional email and password (`password123` for demo accounts). No arbitrary profile hopping or role dropdowns while inside a dashboard.
+- **Strict Role Separation**:
+  - **Students**: Exclusively view the Student Examination Portal. They cannot see or navigate to the Faculty Studio or Admin Console.
+  - **Faculty**: Exclusively view the Faculty Studio. They cannot see or navigate to the Student Portal or Admin Console.
+  - **Administrators**: Exclusively view the Admin Console & Governance Hub. They cannot see or access student/faculty testing views.
+- **Session Termination**: Users must explicitly click **"Sign Out"** to end their session and return to the login screen before another role or account can be accessed.
+- **Safe JSON & Dual-Mode Persistence**: The API layer implements safe response parsing and resilient fallbacks, ensuring zero crashes (`Unexpected token` JSON errors) across static hostings (such as Vercel) and full-stack Express environments.
 
 ---
 

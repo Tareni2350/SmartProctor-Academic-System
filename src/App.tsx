@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/Navbar';
 import { LoginPage } from './components/auth/LoginPage';
 import { StudentDashboard } from './components/student/StudentDashboard';
@@ -9,12 +10,12 @@ import { FacultyDashboard } from './components/faculty/FacultyDashboard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AgentArchitectureView } from './components/agents/AgentArchitectureView';
 import { Exam, ExamAttempt } from './types';
-import { Sparkles, Shield, Cpu, ExternalLink } from 'lucide-react';
+import { Cpu } from 'lucide-react';
 
 function MainAppContent() {
-  const { activeRole, currentUser, setRole } = useAuth();
+  const { activeRole, currentUser } = useAuth();
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
-  const [adminTab, setAdminTab] = useState<'overview' | 'approvals' | 'users' | 'exams' | 'departments' | 'reports' | 'mails' | 'technical'>('overview');
+  const [adminTab, setAdminTab] = useState<'overview' | 'approvals' | 'users' | 'exams' | 'departments' | 'reports' | 'mails'>('overview');
 
   // Exam taking state for students
   const [activeTakingExam, setActiveTakingExam] = useState<Exam | null>(null);
@@ -54,7 +55,7 @@ function MainAppContent() {
     setCurrentTab('dashboard');
   };
 
-  // If in an active exam, render the full-screen ExamRunner without distractions
+  // If in an active exam, render the full-screen ExamRunner
   if (activeTakingExam) {
     return (
       <ExamRunner
@@ -90,23 +91,21 @@ function MainAppContent() {
           setActiveViewingResult(null);
         }}
         onNavigateToApprovals={() => {
-          setRole('admin');
-          setAdminTab('approvals');
-          setCurrentTab('dashboard');
+          if (activeRole === 'admin') {
+            setAdminTab('approvals');
+            setCurrentTab('dashboard');
+          }
         }}
       />
 
-      {/* Main View Area */}
+      {/* Main View Area: STRICT ROLE ISOLATION */}
       <main className="flex-1 pb-16">
-        {/* If viewing an exam result & diagnostic report */}
         {activeViewingResult ? (
           <ExamResultView
             attempt={activeViewingResult.attempt}
             exam={activeViewingResult.exam}
             onBackToDashboard={handleBackToDashboard}
           />
-        ) : currentTab === 'agents' && activeRole === 'admin' ? (
-          <AgentArchitectureView />
         ) : activeRole === 'student' ? (
           <StudentDashboard
             onStartExam={handleStartExam}
@@ -114,18 +113,22 @@ function MainAppContent() {
           />
         ) : activeRole === 'faculty' ? (
           <FacultyDashboard />
-        ) : (
-          <AdminDashboard initialTab={adminTab} />
-        )}
+        ) : activeRole === 'admin' ? (
+          currentTab === 'agents' ? (
+            <AgentArchitectureView />
+          ) : (
+            <AdminDashboard initialTab={adminTab} />
+          )
+        ) : null}
       </main>
 
-      {/* Institutional Academic Footer with ShopVibe Accents */}
-      <footer className="border-t border-slate-200/80 bg-white py-8 text-xs text-slate-500 no-print font-body">
+      {/* Institutional Academic Footer */}
+      <footer className="border-t border-slate-200/80 bg-white py-6 text-xs text-slate-500 no-print font-body">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="font-headline font-bold text-slate-900">SmartProctor Academic System</span>
             <span className="text-slate-300">·</span>
-            <span>Multi-Agent Online Examination & Automated Result Verification Engine</span>
+            <span>Online Examination & Proctoring Platform</span>
           </div>
 
           <div className="flex items-center gap-4 text-[11px]">
@@ -133,17 +136,17 @@ function MainAppContent() {
               <>
                 <button
                   onClick={() => setCurrentTab('agents')}
-                  className="text-fuchsia-600 hover:text-fuchsia-800 font-headline font-bold flex items-center gap-1.5 transition-colors"
+                  className="text-fuchsia-700 hover:text-fuchsia-900 font-headline font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Cpu className="w-3.5 h-3.5" />
-                  <span>Admin Technical Architecture</span>
+                  <span>Agentic AI Architecture</span>
                 </button>
                 <span className="text-slate-300">·</span>
               </>
             )}
-            <span className="badge-pill-cyan text-[10px] px-2 py-0.5">Automated Mail Dispatch: Online</span>
+            <span className="text-emerald-700 font-medium">Session Security Active</span>
             <span className="text-slate-300">·</span>
-            <span className="font-code text-slate-400">Spring Term 2026</span>
+            <span className="font-mono text-slate-400">Spring Term 2026</span>
           </div>
         </div>
       </footer>
@@ -153,8 +156,10 @@ function MainAppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainAppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MainAppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

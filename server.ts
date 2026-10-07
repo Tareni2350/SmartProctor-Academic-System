@@ -420,12 +420,47 @@ let usersList: UserAccount[] = [
     email: 'samantha.reed@university.edu',
     password: 'password123',
     role: 'student',
-    department: 'Computer Science & Engineering',
-    status: 'pending',
+    department: 'Data Science & Artificial Intelligence',
+    status: 'active',
     identifier: 'CS-2026-088',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-    joinedDate: '2026-09-22',
-    notes: 'Registration submitted online. Awaiting student ID card verification.'
+    joinedDate: '2025-09-22'
+  },
+  {
+    id: 'stud-103',
+    name: 'Liam Chen',
+    email: 'liam.chen@university.edu',
+    password: 'password123',
+    role: 'student',
+    department: 'Computer Science & Engineering',
+    status: 'active',
+    identifier: 'CS-2025-103',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
+    joinedDate: '2025-08-20'
+  },
+  {
+    id: 'stud-104',
+    name: 'Priya Patel',
+    email: 'priya.patel@university.edu',
+    password: 'password123',
+    role: 'student',
+    department: 'Information Technology',
+    status: 'active',
+    identifier: 'IT-2025-055',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+    joinedDate: '2025-08-22'
+  },
+  {
+    id: 'stud-105',
+    name: 'Marcus Vance',
+    email: 'marcus.vance@university.edu',
+    password: 'password123',
+    role: 'student',
+    department: 'Computer Science & Engineering',
+    status: 'active',
+    identifier: 'CS-2025-078',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
+    joinedDate: '2025-08-25'
   },
   {
     id: 'fac-pending-2',
@@ -1858,10 +1893,27 @@ app.get('/api/system/stats', (req, res) => {
 
 // Admin Only: Automated Mail Logs & Dispatcher
 app.get('/api/admin/mail-logs', (req, res) => {
+  const email = (req.query.email as string)?.trim().toLowerCase();
+  const logs = email 
+    ? mailLogsList.filter(m => m.recipientEmail.toLowerCase() === email)
+    : mailLogsList;
   res.json({
     success: true,
-    mailLogs: mailLogsList,
-    totalSent: mailLogsList.length
+    mailLogs: logs,
+    totalSent: logs.length
+  });
+});
+
+// User Profile Inbox: View automated emails dispatched to specific recipient
+app.get('/api/user/mail-logs', (req, res) => {
+  const email = (req.query.email as string)?.trim().toLowerCase();
+  const logs = email 
+    ? mailLogsList.filter(m => m.recipientEmail.toLowerCase() === email)
+    : mailLogsList;
+  res.json({
+    success: true,
+    mailLogs: logs,
+    totalSent: logs.length
   });
 });
 

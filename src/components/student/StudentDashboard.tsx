@@ -26,6 +26,8 @@ import {
   Flame
 } from 'lucide-react';
 import { ExamAssistantModal } from './ExamAssistantModal';
+import { AutomatedMailsViewer } from '../common/AutomatedMailsViewer';
+import { Mail, Inbox } from 'lucide-react';
 
 interface StudentDashboardProps {
   onStartExam: (exam: Exam) => void;
@@ -36,6 +38,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
   const { currentUser } = useAuth();
   const [exams, setExams] = useState<Exam[]>([]);
   const [attempts, setAttempts] = useState<ExamAttempt[]>([]);
+  const [mailCount, setMailCount] = useState<number>(0);
+  const [currentSection, setCurrentSection] = useState<'exams' | 'inbox' | 'history'>('exams');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedExamForAssistant, setSelectedExamForAssistant] = useState<Exam | null>(null);
   
@@ -55,12 +59,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [fetchedExams, fetchedAttempts] = await Promise.all([
+      const [fetchedExams, fetchedAttempts, userMails] = await Promise.all([
         api.getExams(),
-        api.getSubmissions({ studentId: currentUser.id })
+        api.getSubmissions({ studentId: currentUser.id }),
+        api.getUserMailLogs(currentUser.email).catch(() => [])
       ]);
       setExams(fetchedExams);
       setAttempts(fetchedAttempts);
+      setMailCount(userMails.length);
     } catch (err) {
       console.error('Failed to load student data:', err);
     } finally {
@@ -91,7 +97,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
       <div className="relative rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-fuchsia-950 text-white p-7 sm:p-9 shadow-xl overflow-hidden border border-fuchsia-500/20">
         {/* Background glow orbs */}
         <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-fuchsia-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 -mb-12 w-64 h-64 bg-cyan-400/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-12 w-64 h-64 bg-pink-400/15 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="space-y-3 max-w-2xl">
@@ -100,7 +106,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
                 <Flame className="w-3.5 h-3.5 text-fuchsia-500 animate-pulse" />
                 <span>STUDENT PORTAL · SPRING 2026</span>
               </span>
-              <span className="badge-pill-cyan text-[11px] px-3 py-1 font-mono">
+              <span className="badge-pill-fuchsia text-[11px] px-3 py-1 font-mono">
                 ID: {currentUser.identifier || currentUser.id}
               </span>
               <span className="badge-pill-yellow text-[11px] px-3 py-1">
@@ -109,7 +115,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-headline font-black tracking-tight text-white leading-tight">
-              Ready to crush your exams, <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-pink-400 to-cyan-300">{currentUser.name.split(' ')[0]}</span>?
+              Ready to crush your exams, <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-pink-400 to-rose-300">{currentUser.name.split(' ')[0]}</span>?
             </h1>
 
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-body">
@@ -119,7 +125,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setShowStudyPlanModal(true)}
-                className="btn-shopvibe-primary px-5 py-2.5 text-xs font-headline font-bold flex items-center gap-2"
+                className="btn-shopvibe-primary px-5 py-2.5 text-xs font-headline font-bold flex items-center gap-2 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-yellow-300" />
                 <span>Open Personalized Study Plan</span>
@@ -128,9 +134,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
               {activeExams[0] && (
                 <button
                   onClick={() => setSelectedExamForAssistant(activeExams[0])}
-                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-headline font-semibold flex items-center gap-2 border border-white/20 transition-all backdrop-blur-md"
+                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-headline font-semibold flex items-center gap-2 border border-white/20 transition-all backdrop-blur-md cursor-pointer"
                 >
-                  <Bot className="w-4 h-4 text-cyan-300" />
+                  <Bot className="w-4 h-4 text-fuchsia-300" />
                   <span>Ask AI Exam Tutor</span>
                 </button>
               )}
@@ -141,7 +147,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
           <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 shrink-0 sm:min-w-[200px]">
             <div className="bg-white/10 backdrop-blur-md border border-white/15 p-4 rounded-2xl text-center lg:text-left transition-all hover:bg-white/15">
               <span className="text-[11px] font-headline font-bold uppercase tracking-wider text-slate-400 block">Tests Completed</span>
-              <div className="text-2xl sm:text-3xl font-black font-code text-cyan-300 mt-0.5">
+              <div className="text-2xl sm:text-3xl font-black font-code text-fuchsia-300 mt-0.5">
                 {attempts.length}
               </div>
             </div>
@@ -163,8 +169,64 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
         </div>
       </div>
 
-      {/* AGENT 1 & 2: PERSONAL PERFORMANCE & STUDY AGENT CALLOUT */}
-      <div className="card-shopvibe p-6 sm:p-7 border border-fuchsia-100 bg-gradient-to-br from-white via-fuchsia-50/20 to-cyan-50/20">
+      {/* Student Portal Navigation Pills */}
+      <div className="flex flex-wrap items-center gap-2.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-full w-fit border border-slate-200 dark:border-slate-800">
+        <button
+          onClick={() => setCurrentSection('exams')}
+          className={`px-4 py-2 rounded-full text-xs font-headline font-bold flex items-center gap-2 transition-all ${
+            currentSection === 'exams'
+              ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5 text-fuchsia-500" />
+          <span>Active Examinations ({activeExams.length})</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentSection('inbox')}
+          className={`px-4 py-2 rounded-full text-xs font-headline font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            currentSection === 'inbox'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Mail className="w-3.5 h-3.5 text-fuchsia-500" />
+          <span>Official Mail & Inbox</span>
+          {mailCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-fuchsia-100 text-fuchsia-800">
+              {mailCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setCurrentSection('history')}
+          className={`px-4 py-2 rounded-full text-xs font-headline font-bold flex items-center gap-2 transition-all cursor-pointer ${
+            currentSection === 'history'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5 text-emerald-500" />
+          <span>Past Submissions ({attempts.length})</span>
+        </button>
+      </div>
+
+      {/* SECTION: AUTOMATED MAILS & INBOX */}
+      {currentSection === 'inbox' && (
+        <AutomatedMailsViewer 
+          userEmail={currentUser.email} 
+          title="My Official Examination Notifications & Score Mails"
+          description="Live transactional emails automatically dispatched to your address by university proctors and automated grading systems."
+        />
+      )}
+
+      {/* SECTION: AVAILABLE EXAMINATIONS */}
+      {currentSection === 'exams' && (
+        <>
+          {/* AGENT 1 & 2: PERSONAL PERFORMANCE & STUDY AGENT CALLOUT */}
+          <div className="card-shopvibe p-6 sm:p-7 border border-fuchsia-100 bg-gradient-to-br from-white via-fuchsia-50/20 to-pink-50/20">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold">
@@ -175,7 +237,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
                 <h2 className="text-base font-headline font-bold text-slate-900">
                   Personal AI Performance Agent · Live Diagnosis
                 </h2>
-                <span className="badge-pill-cyan text-[10px] px-2.5 py-0.5">
+                <span className="badge-pill-fuchsia text-[10px] px-2.5 py-0.5">
                   Adaptive
                 </span>
               </div>
@@ -276,7 +338,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
                 {/* Top badges */}
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="badge-pill-cyan text-[11px] px-3 py-1 font-mono font-bold">
+                    <span className="badge-pill-fuchsia text-[11px] px-3 py-1 font-mono font-bold">
                       {exam.courseCode}
                     </span>
                     <span className="text-[11px] font-headline font-bold text-slate-400 uppercase tracking-wider">
@@ -299,7 +361,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
                     </div>
                     <span>·</span>
                     <div className="flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-cyan-600" />
+                      <FileText className="w-3.5 h-3.5 text-fuchsia-600" />
                       <span className="font-mono font-bold">{exam.questions.length}</span> questions
                     </div>
                     <span>·</span>
@@ -315,10 +377,10 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
                 <div className="flex items-center gap-3 pt-2">
                   <button
                     onClick={() => setSelectedExamForAssistant(exam)}
-                    className="p-3 rounded-full border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 text-cyan-700 text-xs font-headline font-bold flex items-center justify-center transition-all"
+                    className="p-3 rounded-full border border-slate-200 hover:border-fuchsia-300 hover:bg-fuchsia-50 text-fuchsia-700 text-xs font-headline font-bold flex items-center justify-center transition-all cursor-pointer"
                     title="Query rules and syllabus with AI Assistant"
                   >
-                    <Bot className="w-4 h-4 text-cyan-600" />
+                    <Bot className="w-4 h-4 text-fuchsia-600" />
                   </button>
 
                   <button
@@ -334,13 +396,16 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
           </div>
         )}
       </div>
+    </>
+  )}
 
-      {/* SECTION: PREVIOUS EXAMINATIONS & RESULT REPORTS */}
-      <div className="space-y-4 pt-4">
+  {/* SECTION: PREVIOUS EXAMINATIONS & RESULT REPORTS */}
+  {currentSection === 'history' && (
+    <div className="space-y-4 pt-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-headline font-black text-slate-900 flex items-center gap-2.5">
             <span>Previous Examinations & Diagnostic Reports</span>
-            <span className="badge-pill-cyan text-xs px-3 py-0.5">
+            <span className="badge-pill-fuchsia text-xs px-3 py-0.5">
               {attempts.length} Recorded
             </span>
           </h2>
@@ -403,6 +468,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
           </div>
         )}
       </div>
+    )}
 
       {/* ShopVibe Study Plan Modal (Autonomous Personalized Study Agent) */}
       {showStudyPlanModal && (
@@ -410,7 +476,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 text-white flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-pink-500 text-white flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -444,7 +510,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ onStartExam,
 
               <div className="space-y-3 font-body">
                 <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200/70">
-                  <span className="w-7 h-7 rounded-full bg-cyan-100 text-cyan-800 text-xs font-headline font-black flex items-center justify-center shrink-0">
+                  <span className="w-7 h-7 rounded-full bg-fuchsia-100 text-fuchsia-800 text-xs font-headline font-black flex items-center justify-center shrink-0">
                     D1
                   </span>
                   <div>

@@ -180,7 +180,7 @@ export const AgentArchitectureView: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between text-xs text-slate-400 mb-2.5">
                   <span className="font-code font-bold text-fuchsia-600 text-sm">{ag.number}</span>
-                  <span className="badge-pill-cyan text-[10px] px-2.5 py-0.5">
+                  <span className="badge-pill-fuchsia text-[10px] px-2.5 py-0.5">
                     {ag.badge}
                   </span>
                 </div>

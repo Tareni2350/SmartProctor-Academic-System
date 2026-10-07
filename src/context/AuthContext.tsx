@@ -1,16 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserAccount, UserRole } from '../types';
 import { api } from '../services/api';
+import { SEED_USERS } from '../services/localStore';
 
 interface AuthContextType {
   currentUser: UserAccount | null;
-  activeRole: UserRole;
+  activeRole: UserRole | null;
   isLoggedIn: boolean;
   allUsers: UserAccount[];
   pendingUsers: UserAccount[];
   pendingCount: number;
-  setRole: (role: UserRole) => void;
-  switchUser: (userId: string) => void;
   login: (email: string, password?: string) => Promise<{ success: boolean; user?: UserAccount; error?: string; status?: string }>;
   register: (userData: {
     name: string;
@@ -23,76 +22,44 @@ interface AuthContextType {
   approveUser: (userId: string, action: 'approve' | 'reject', notes?: string) => Promise<UserAccount>;
   createUser: (userData: any) => Promise<UserAccount>;
   logout: () => void;
-  loginAs: (role: UserRole) => void;
   refreshUsers: () => Promise<void>;
 }
 
-const DEFAULT_USERS: UserAccount[] = [
-  {
-    id: 'stud-101',
-    name: 'Alex Rivera',
-    email: 'alex.rivera@university.edu',
-    role: 'student',
-    department: 'Computer Science & Engineering',
-    status: 'active',
-    identifier: 'CS-2025-042',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    joinedDate: '2025-08-15'
-  },
-  {
-    id: 'fac-201',
-    name: 'Dr. Alan Turing',
-    email: 'alan.turing@university.edu',
-    role: 'faculty',
-    department: 'Computer Science & Engineering',
-    status: 'active',
-    identifier: 'FAC-CS-001',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    joinedDate: '2024-01-10'
-  },
-  {
-    id: 'adm-301',
-    name: 'Dean Margaret Hamilton',
-    email: 'm.hamilton@university.edu',
-    role: 'admin',
-    department: 'Academic Administration',
-    status: 'active',
-    identifier: 'ADM-EXEC-01',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    joinedDate: '2023-06-01'
-  }
-];
+const SESSION_KEY = 'smartproctor_session_user';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
-    const saved = localStorage.getItem('aegis_user');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem(SESSION_KEY);
+      if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.id && parsed.status === 'active') return parsed;
-      } catch (e) {}
-    }
-    // Default logged in user for immediate preview: Alex Rivera (student)
-    return DEFAULT_USERS[0];
+        if (parsed && parsed.id && parsed.status === 'active') {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    // Normal real-world flow: start logged out so user enters their credentials!
+    return null;
   });
 
-  const [allUsers, setAllUsers] = useState<UserAccount[]>(DEFAULT_USERS);
+  const [allUsers, setAllUsers] = useState<UserAccount[]>(SEED_USERS);
 
   const refreshUsers = async () => {
     try {
       const users = await api.getUsers();
-      setAllUsers(users);
-      // If current user was updated (e.g. approved), update current user state
-      if (currentUser) {
-        const updatedSelf = users.find(u => u.id === currentUser.id);
-        if (updatedSelf) {
-          setCurrentUser(updatedSelf);
+      if (users && users.length > 0) {
+        setAllUsers(users);
+        if (currentUser) {
+          const updatedSelf = users.find(u => u.id === currentUser.id);
+          if (updatedSelf) {
+            setCurrentUser(updatedSelf);
+          }
         }
       }
     } catch (err) {
-      console.warn('Failed to load users from backend:', err);
+      console.warn('Failed to refresh users:', err);
     }
   };
 
@@ -102,13 +69,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('aegis_user', JSON.stringify(currentUser));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
     } else {
-      localStorage.removeItem('aegis_user');
+      localStorage.removeItem(SESSION_KEY);
     }
   }, [currentUser]);
 
-  const activeRole: UserRole = currentUser?.role || 'student';
+  const activeRole: UserRole | null = currentUser?.role || null;
   const isLoggedIn = currentUser !== null;
   const pendingUsers = allUsers.filter(u => u.status === 'pending');
   const pendingCount = pendingUsers.length;
@@ -121,7 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await refreshUsers();
         return { success: true, user: result.user };
       }
-      return { success: false, error: result.error, status: result.status, user: result.user };
+      return {
+        success: false,
+        error: result.error || 'Authentication failed. Please verify credentials.',
+        status: result.status,
+        user: result.user
+      };
     } catch (err: any) {
       return { success: false, error: err.message || 'Login failed' };
     }
@@ -156,27 +128,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return created;
   };
 
-  const setRole = (role: UserRole) => {
-    const matched = allUsers.find(u => u.role === role && u.status === 'active') ||
-                    DEFAULT_USERS.find(u => u.role === role);
-    if (matched) {
-      setCurrentUser(matched);
-    } else if (currentUser) {
-      setCurrentUser({ ...currentUser, role });
-    }
-  };
-
-  const switchUser = (userId: string) => {
-    const found = allUsers.find(u => u.id === userId);
-    if (found) setCurrentUser(found);
-  };
-
-  const loginAs = (role: UserRole) => {
-    setRole(role);
-  };
-
   const logout = () => {
     setCurrentUser(null);
+    localStorage.removeItem(SESSION_KEY);
   };
 
   return (
@@ -188,14 +142,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         allUsers,
         pendingUsers,
         pendingCount,
-        setRole,
-        switchUser,
         login,
         register,
         approveUser,
         createUser,
         logout,
-        loginAs,
         refreshUsers
       }}
     >

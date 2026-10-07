@@ -370,7 +370,7 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
       <header className="bg-slate-950 text-white border-b border-fuchsia-900/30 sticky top-0 z-30 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-fuchsia-600 to-cyan-400 flex items-center justify-center text-white shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-fuchsia-600 to-pink-500 flex items-center justify-center text-white shadow-xs">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -378,7 +378,7 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
                 <h1 className="text-sm sm:text-base font-headline font-black text-white tracking-wide truncate max-w-xs sm:max-w-md">
                   {exam.courseCode}: {exam.title}
                 </h1>
-                <span className="badge-pill-cyan text-[10px] px-2.5 py-0.5 font-mono">
+                <span className="badge-pill-fuchsia text-[10px] px-2.5 py-0.5 font-mono">
                   LIVE EXAM
                 </span>
               </div>
@@ -424,7 +424,7 @@ export const ExamRunner: React.FC<ExamRunnerProps> = ({ exam, onExamFinished, on
             {/* AI Assistant Help */}
             <button
               onClick={() => setShowAssistantModal(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800 text-xs text-cyan-300 font-headline font-semibold transition-all hover:scale-105 active:scale-95"
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-fuchsia-950/80 hover:bg-fuchsia-900 border border-fuchsia-800 text-xs text-fuchsia-300 font-headline font-semibold transition-all hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Exam Tutor</span>

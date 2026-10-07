@@ -287,7 +287,7 @@ export const UploadQuestionPaperModal: React.FC<UploadQuestionPaperModalProps> =
         {/* Header */}
         <div className="px-6 py-5 border-b border-slate-200/80 bg-white flex items-center justify-between font-body">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-500 text-white flex items-center justify-center shadow-md shadow-cyan-500/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-fuchsia-600 to-pink-500 text-white flex items-center justify-center shadow-md shadow-fuchsia-500/20">
               <UploadCloud className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -295,7 +295,7 @@ export const UploadQuestionPaperModal: React.FC<UploadQuestionPaperModalProps> =
                 <h3 className="text-lg font-headline font-black text-slate-900">
                   Upload Examination Question Paper
                 </h3>
-                <span className="badge-pill-cyan text-[10px] px-2.5 py-0.5">
+                <span className="badge-pill-fuchsia text-[10px] px-2.5 py-0.5">
                   AI Extractor
                 </span>
               </div>
